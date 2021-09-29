@@ -65,7 +65,7 @@ var db = {
         url: "mongodb://adapptdemo:adappt-demo@larsentoubro.adapptonline.com/finaldata?authSource=admin",
         options: options
     },
-    "kla": {
+    "kla":{
         url: "mongodb://root:adapptroot@52.220.122.153/adappt-kla?authSource=admin",
         options: options
     }

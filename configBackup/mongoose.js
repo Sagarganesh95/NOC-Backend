@@ -23,7 +23,7 @@ var schemafiles = {
     // "adappt-tomtom": schemaFile,
     // "adappt-bosch": schemaFile,
     "maersk": schemaFile,
-    "kla": schemaFile
+    "kla":schemaFile
         // "adappt-amazon": schemaFile,
         // "adappt-lenovo": schemaFile
 
