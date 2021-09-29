@@ -3,6 +3,8 @@ process.env.NODE_ENV = process.env.NODE_ENV || 'development';
 
 var config = require('./config/config'),
     express = require('./config/express');
+var ip = require("ip");
+var host = ip.address();
 
 var app = express();
 // module.exports = app;
@@ -15,4 +17,4 @@ var app = express();
 // require('../app/routes/sockets.server.routes')(app, io);
 
 
-console.log(process.env.NODE_ENV + ' server running at http://localhost:' + config.port);
+console.log(process.env.NODE_ENV + ' server running at ' + host + ":" + config.port);
