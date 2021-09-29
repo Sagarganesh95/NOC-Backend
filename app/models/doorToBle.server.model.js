@@ -8,7 +8,7 @@ const DoorToBleSchema = new Schema({
         ref: "Floors",
         index: true
     },
-    roomId: {
+    doorId: {
         type: Schema.ObjectId,
         ref: 'Sections',
         index: true
