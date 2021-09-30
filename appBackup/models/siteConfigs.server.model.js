@@ -10,37 +10,32 @@ const siteConfgsSchema = new Schema({
     siteName: {
         type: String
     },
-    buildings: {
+    buildings: { 
         type: Schema.ObjectId,
         index: true
     },
     nova: {
-        shippment: Number,
+        shippment:Number,
         installed: Number,
         working: Number
     },
-    virgo: {
-        shippment: Number,
+    desk:{
+        shippment:Number,
         installed: Number,
         working: Number
     },
-    desk: {
-        shippment: Number,
-        installed: Number,
-        working: Number
-    },
-    host: {
-        shippment: Number,
+    host:{
+        shippment:Number,
         installed: Number,
         working: Number
     },
     daylightOccupancy: {
-        shippment: Number,
+        shippment:Number,
         installed: Number,
         working: Number
     },
     wlad: {
-        shippment: Number,
+        shippment:Number,
         installed: Number,
         working: Number
     },
@@ -51,7 +46,7 @@ const siteConfgsSchema = new Schema({
         type: String
     }
 });
-siteConfgsSchema.index({ buildings: 1 });
+siteConfgsSchema.index({ buildings:1 });
 siteConfgsSchema.pre('save', function(next) {
     next();
 });

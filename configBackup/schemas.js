@@ -21,7 +21,7 @@ module.exports = {
     occAggregation: require('../app/models/occAggregation.server.model'),
     parking: require('../app/models/parking.server.model'),
     roomToBle: require('../app/models/roomToBle.server.model'),
-    doorToBle: require('../app/models/doorToBle.server.model'),
+    doorToBle:require('../app/models/doorToBle.server.model'),
     scenes: require('../app/models/scenes.server.model'),
     sceneToLight: require('../app/models/sceneToLight.server.model'),
     scheduler: require('../app/models/scheduler.server.model'),

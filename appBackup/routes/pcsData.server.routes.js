@@ -2,7 +2,6 @@ const pcsDatas = require('../controllers/pcsData.server.controller');
 module.exports = function(app) {
 
     app.route('/api/sensors/pcsData').post(pcsDatas.getPcsDatasCache, pcsDatas.getPcsDatas);
-    app.route('/api/sensors/virgoData').post(pcsDatas.getVirgoDatasCache, pcsDatas.getVirgoDatas);
     app.route('/api/sensors/getMinuteData').post(pcsDatas.getMinutesData);
     app.route('/api/sensors/sendBleLogs').post(pcsDatas.sendBleLogs);
     app.route('/api/sensors/resolveBleLogs').post(pcsDatas.resolveBleLogs);
@@ -13,7 +12,6 @@ module.exports = function(app) {
     app.route('/api/sensors/getBleSubject').get(pcsDatas.getBleSubject);
     app.route('/api/sensors/gethealthcount').post(pcsDatas.gethealthcountcache, pcsDatas.gethealthcount);
     app.route('/api/sensors/getPcsCount').post(pcsDatas.getPcsCountCache, pcsDatas.getPcsCount);
-    app.route('/api/sensors/getVirgoCount').post(pcsDatas.getVirgoCountCache, pcsDatas.getVirgoCount);
     app.route('/api/sensors/getLiveData').post(pcsDatas.getLiveData);
     app.route('/api/sensors/scheduleMails').get(pcsDatas.scheduleMails);
 }
