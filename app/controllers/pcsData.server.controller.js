@@ -199,12 +199,24 @@ exports.getPcsDatas = async function(req, res, next) {
                             multi.exec(async(err, res) => {
                                 err ? console.error(err, "error") : await client.expire(`getPcsDatas-${req.body.subdomain}-${df.getDate()  }-${dt.getDate()}`, 600);
                             });
-                            res.send(sendArray.sort(function(a, b) { return a.id - b.id }))
+                            var finalResult = []
+                            sendArray.forEach(function(f) {
+                                if (!f.doorWays) {
+                                    finalResult.push(f)
+                                }
+                            })
+                            res.send(finalResult.sort(function(a, b) { return a.id - b.id }))
                         }
                     })
                 } else {
                     console.log(" PCS no response from = ", req.body.subdomain);
-                    res.send(sendArray);
+                    var finalResult = []
+                    sendArray.forEach(function(f) {
+                        if (!f.doorWays) {
+                            finalResult.push(f)
+                        }
+                    })
+                    res.send(finalResult);
                 }
             } catch (e) {
                 console.log(e.message)
@@ -247,7 +259,6 @@ exports.getVirgoDatasCache = async(req, res, next) => {
 
 exports.getVirgoDatas = async function(req, res, next) {
     try {
-        console.log("I entered APIs")
         let objC;
         jwt.verify(req.authToken, req.config.tokenSecret, (err, decoded) => {
             if (err) {
@@ -259,8 +270,6 @@ exports.getVirgoDatas = async function(req, res, next) {
         const result = await db['localhost'].users.findOne({ username: objC.username }, { password: 1, _id: 0, Buildings: 1 });
         let pass = result.password === objC.password;
         if (pass == true) {
-            console.log("entered into pass")
-            console.log(result, "Result")
             let Buildings = result.Buildings;
             var count = 0;
             var sendArray = [];
@@ -275,14 +284,17 @@ exports.getVirgoDatas = async function(req, res, next) {
                 buildUnwind = { $unwind: "$building_docs" };
             let hostLook = { $lookup: { from: "hosts", localField: "bles_docs.hostId", foreignField: "_id", as: "host_docs" } },
                 hostUnwind = { $unwind: "$host_docs" };
-
+            let segmentLook = { $lookup: { from: "segments", localField: "segmentId", foreignField: "_id", as: "segments_docs" } },
+                segmentUnwind = { $unwind: "$segments_docs" };
+            let sectionLook = { $lookup: { from: "sections", localField: "roomId", foreignField: "_id", as: "sections_docs" } },
+                sectionsUnwind = { $unwind: "$sections_docs" };
             let doorLook = { $lookup: { from: "doors", localField: "doorId", foreignField: "_id", as: "doors_docs" } },
                 doorsUnwind = { $unwind: "$doors_docs" };
             let Group = {
                 $group: {
                     _id: "$bles_docs._id",
                     "status": { $first: "$status" },
-                    "room_name": { $push: "$doors_docs.name" },
+                    "room_name": { $push: "$segments_docs.name" },
                     "ble_address": { $first: "$bles_docs.address" },
                     "floor_name": { $first: "$floors_docs.alias" },
                     "building_name": { $first: "$building_docs.alias" },
@@ -296,7 +308,8 @@ exports.getVirgoDatas = async function(req, res, next) {
                 $project: {
                     "ble_address": "$bles_docs.address",
                     "floor_name": "$floors_docs.alias",
-                    "room_name": ["$doors_docs.name"],
+                    "room_name": ["$sections_docs.name"],
+                    "door_name": ["$doors_docs.name"],
                     "building_name": "$building_docs.alias",
                     lastUpdated: 1,
                     status: 1,
@@ -306,6 +319,7 @@ exports.getVirgoDatas = async function(req, res, next) {
                     "hostName": "$host_docs.name"
                 }
             };
+
             let builg = [],
                 buildingM;
             if (Buildings.length > 0) {
@@ -317,23 +331,45 @@ exports.getVirgoDatas = async function(req, res, next) {
             } else {
                 buildingM = { $nin: builg };
             };
+
             let MatchNotPIR = { $match: { "building_docs.alias": { $nin: bu } } };
             let userBlgMatch = { $match: { "building_docs._id": buildingM } };
+
             try {
                 let result = [];
-
-                console.log(userBlgMatch, "UserMatch")
+                let segments = await db[obj.subdomain].segmentToBles.aggregate([blesLook, blesUnwind, floorLook, floorUnwind, buildLook,
+                    buildUnwind, userBlgMatch, hostLook, hostUnwind, segmentLook, segmentUnwind, Group
+                ]);
+                let rooms = await db[obj.subdomain].roomToBles.aggregate([blesLook, blesUnwind, floorLook, floorUnwind, sectionLook, sectionsUnwind, buildLook,
+                    buildUnwind, userBlgMatch, hostLook, hostUnwind, MatchNotPIR, Project
+                ]);
                 let doors = await db[obj.subdomain].doorToBles.aggregate([blesLook, blesUnwind, floorLook, floorUnwind, doorLook, doorsUnwind, buildLook,
                     buildUnwind, userBlgMatch, hostLook, hostUnwind, MatchNotPIR, Project
                 ]);
+                console.log(doors, "Door results")
 
+                // console.log(blesLook, blesUnwind, floorLook, floorUnwind, sectionLook, sectionsUnwind, buildLook,
+                //     buildUnwind, userBlgMatch, hostLook, hostUnwind, MatchNotPIR, Project)
+
+
+                if (segments.length > 0) {
+                    for (let i of segments) {
+                        result.push(i)
+                    }
+                }
+                if (rooms.length > 0) {
+                    for (let i of rooms) {
+                        result.push(i)
+                    }
+                }
                 if (doors.length > 0) {
                     for (let i of doors) {
                         result.push(i)
                     }
                 }
+
                 if (result.length > 0) {
-                    console.log(result)
+
                     result.forEach(async function(room, i) {
                         timezone = room.timezone;
                         var startm = moment.tz(timezone).startOf('day').utc();
@@ -354,28 +390,53 @@ exports.getVirgoDatas = async function(req, res, next) {
                             sendStruc.noofresponsesTillNow = await gethealthLog(req.body.subdomain, momentstart, momentend, room._id),
                             sendStruc.startDate = moment.tz(startdate, room.timezone).format("DD/M/YYYY hh:mm A"),
                             sendStruc.bleId = room._id;
+
                         sendStruc.hostName = room.hostName;
                         sendStruc.noofresponses = await gethealthLog(req.body.subdomain, startm, endm, room._id);
-                        sendStruc.areaName = room.room_name;
+                        console.log(room.room_name, "Room Names")
+                        if (room.room_name[0] == null) {
+                            console.log("entered into condition")
+                            sendStruc.areaName = room.door_name
+                            sendStruc.doorWays = true
+                        } else {
+                            sendStruc.areaName = room.room_name;
+                        }
+                        // console.log(room.door_name, "DoorNamea")
+                        // sendStruc.areaName = room.room_name;
                         sendArray.push(sendStruc);
                         let df = new Date(momentstart),
                             dt = new Date(momentend);
-                        await multi.rpush(`getVirgoDatas-${req.body.subdomain}-${df.getDate()  }-${dt.getDate()}`, JSON.stringify(sendStruc));
+                        await multi.rpush(`getPcsDatas-${req.body.subdomain}-${df.getDate()  }-${dt.getDate()}`, JSON.stringify(sendStruc));
                         if (result.length == ++count) {
-                            console.log(" Virgo response from = ", req.body.subdomain);
+                            console.log(" PCS response from = ", req.body.subdomain);
                             multi.exec(async(err, res) => {
-                                err ? console.error(err, "error") : await client.expire(`getVirgoDatas-${req.body.subdomain}-${df.getDate()  }-${dt.getDate()}`, 600);
+                                err ? console.error(err, "error") : await client.expire(`getPcsDatas-${req.body.subdomain}-${df.getDate()  }-${dt.getDate()}`, 600);
                             });
-                            res.send(sendArray.sort(function(a, b) { return a.id - b.id }))
+                            console.log(sendArray, "FinalOutput in if")
+                            var finalResult = []
+                            sendArray.forEach(function(f) {
+                                if (f.doorWays) {
+                                    finalResult.push(f)
+                                }
+                            })
+                            res.send(finalResult.sort(function(a, b) { return a.id - b.id }))
                         }
                     })
                 } else {
-                    console.log(" Virgo no response from = ", req.body.subdomain);
+                    console.log(" PCS no response from = ", req.body.subdomain);
+                    console.log(sendArray, "FinalOutput in last")
+                    var finalResult = []
+                    sendArray.forEach(function(f) {
+                        if (f.doorWays) {
+                            finalResult.push(f)
+                        }
+                    })
                     res.send(sendArray);
                 }
             } catch (e) {
                 console.log(e.message)
             }
+
         } else {
             res.status(400).send({ error: "no authToken matched " })
         }
@@ -730,6 +791,17 @@ exports.gethealthcount = async function(req, res, next) {
                 Blescount.push(ble)
             }
             for (let ble of roomscount) {
+                Blescount.push(ble)
+            }
+        }
+        if (type == "VIRGO") {
+            // limit = 1440;
+            // let segmentscount = await db[obj.subdomain].segmentToBles.find({ floorId: { $in: floors[0].floors } }, { bleId: 1, _id: 0 });
+            let doorscount = await db[obj.subdomain].doorToBles.find({ floorId: { $in: floors[0].floors } }, { bleId: 1, _id: 0 });
+            // for (let ble of segmentscount) {
+            //     Blescount.push(ble)
+            // }
+            for (let ble of doorscount) {
                 Blescount.push(ble)
             }
         }
