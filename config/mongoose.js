@@ -19,7 +19,7 @@ var schemafiles = {
     "lntpowai": schemaFile,
     // "adappt-jll": schemaFile,
     // "adappt-zs": schemaFile,
-    "adappt-mmoser": schemaFile,
+   // "adappt-mmoser": schemaFile,
     // "adappt-tomtom": schemaFile,
     // "adappt-bosch": schemaFile,
     "maersk": schemaFile,

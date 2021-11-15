@@ -320,6 +320,7 @@ exports.getHostCount = async(req, res, next) => {
                         ])
                     }
                     if (key == false) {
+                        console.log(req.body.subdomain,"Subdomain")
                         result = await db[req.body.subdomain].hosts.aggregate([
                             { $lookup: { from: "buildings", localField: "buildingId", foreignField: "_id", as: "building_docs" } }, { $unwind: "$building_docs" },
                             { $match: { buildingId: buildingM } },

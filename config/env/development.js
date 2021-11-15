@@ -45,10 +45,10 @@ var db = {
         url: "mongodb://adapptdemo:adappt-demo@lntpowai.adapptonline.com/finaldata?authSource=admin",
         options: options
     },
-    "adappt-mmoser": {
-        url: "mongodb://root:adapptroot@52.220.122.153/adappt-mmoser?authSource=admin",
-        options: options
-    },
+   // "adappt-mmoser": {
+     //   url: "mongodb://root:adapptroot@52.220.122.153/adappt-mmoser?authSource=admin",
+       // options: options
+   // },
     // "adappt-zs": {
     //     url: "mongodb://root:adapptroot@zs.adapptonline.com/adappt-zs?authSource=admin",
     //     options: options
@@ -66,7 +66,7 @@ var db = {
         options: options
     },
     "kla": {
-        url: "mongodb://root:adapptroot@52.220.122.153/adappt-kla?authSource=admin",
+        url: "mongodb://adapptdemo:adappt-demo@kla.adapptonline.com/adappt-kla?authSource=admin",
         options: options
     }
     // "adappt-amazon": {
@@ -87,7 +87,7 @@ var domainlist = [
     // "adappt-kores",
     // "adappt-jll",
     "lntpowai",
-    "adappt-mmoser",
+   // "adappt-mmoser",
     // "adappt-tomtom",
     // "adappt-bosch",
     // "adappt-lenovo",
@@ -103,7 +103,7 @@ global.domainData = [
     // "adappt-kores",
     // "adappt-jll",
     "lntpowai",
-    "adappt-mmoser",
+   // "adappt-mmoser",
     // "adappt-zs",
     // "adappt-tomtom",
     // "adappt-bosch",
