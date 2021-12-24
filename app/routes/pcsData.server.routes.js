@@ -3,7 +3,7 @@ module.exports = function(app) {
     // pcsDatas.getPcsDatasCache,
     // pcsDatas.getVirgoDatasCache,
     // pcsDatas.gethealthcountcache,
-    app.route('/api/sensors/pcsData').post(pcsDatas.getPcsDatasCache, pcsDatas.getPcsDatas);
+    app.route('/api/sensors/pcsData').post( pcsDatas.getPcsDatas);
     app.route('/api/sensors/virgoData').post(pcsDatas.getVirgoDatasCache, pcsDatas.getVirgoDatas);
     app.route('/api/sensors/getMinuteData').post(pcsDatas.getMinutesData);
     app.route('/api/sensors/sendBleLogs').post(pcsDatas.sendBleLogs);

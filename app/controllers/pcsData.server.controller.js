@@ -70,7 +70,7 @@ exports.getPcsDatas = async function(req, res, next) {
             let buildLook = { $lookup: { from: "buildings", localField: "floors_docs.buildingId", foreignField: "_id", as: "building_docs" } },
                 buildUnwind = { $unwind: "$building_docs" };
             let hostLook = { $lookup: { from: "hosts", localField: "bles_docs.hostId", foreignField: "_id", as: "host_docs" } },
-                hostUnwind = { $unwind: "$host_docs" };
+                hostUnwind = { '$unwind':{ path:'$host_docs',preserveNullAndEmptyArrays: true} };
             let segmentLook = { $lookup: { from: "segments", localField: "segmentId", foreignField: "_id", as: "segments_docs" } },
                 segmentUnwind = { $unwind: "$segments_docs" };
             let sectionLook = { $lookup: { from: "sections", localField: "roomId", foreignField: "_id", as: "sections_docs" } },
@@ -127,6 +127,8 @@ exports.getPcsDatas = async function(req, res, next) {
                 let segments = await db[obj.subdomain].segmentToBles.aggregate([blesLook, blesUnwind, floorLook, floorUnwind, buildLook,
                     buildUnwind, userBlgMatch, hostLook, hostUnwind, segmentLook, segmentUnwind, Group
                 ]);
+                console.log(blesLook, blesUnwind, floorLook, floorUnwind, sectionLook, sectionsUnwind, buildLook,
+                    buildUnwind, userBlgMatch, hostLook, hostUnwind, MatchNotPIR, Project,"query here for rooms")
                 let rooms = await db[obj.subdomain].roomToBles.aggregate([blesLook, blesUnwind, floorLook, floorUnwind, sectionLook, sectionsUnwind, buildLook,
                     buildUnwind, userBlgMatch, hostLook, hostUnwind, MatchNotPIR, Project
                 ]);
@@ -205,10 +207,13 @@ exports.getPcsDatas = async function(req, res, next) {
                                     finalResult.push(f)
                                 }
                             })
+                            console.log("Sending response here0")
+                            console.log(finalResult.length,"Number of documents")
                             res.send(finalResult.sort(function(a, b) { return a.id - b.id }))
                         }
                     })
                 } else {
+                    console.log("Sending response here")
                     console.log(" PCS no response from = ", req.body.subdomain);
                     var finalResult = []
                     sendArray.forEach(function(f) {
